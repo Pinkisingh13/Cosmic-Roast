@@ -2,13 +2,15 @@
 
 A fun app that generates savage, Gen-Z style roasts based on your birthdate using AI and numerology.
 
+Ever wondered what the stars *really* think about you? Enter your birthdate and let "Ketu" - our toxic Gen-Z astrologer AI - roast you with brutal honesty. Using ancient numerology (Mulank) combined with modern AI, get your personalized savage prediction for 2026!
+
 **Live Demo:** https://cosmo-roast.netlify.app
 
 **Demo Video:**
 
-<div style="position:relative; width:100%; height:0px; padding-bottom:55.781%"><iframe allow="fullscreen;autoplay" allowfullscreen height="100%" src="https://streamable.com/e/796nsz?autoplay=1&muted=1" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe></div>
+[![Watch Demo](https://img.shields.io/badge/▶️_Watch_Demo-Streamable-blue?style=for-the-badge)](https://streamable.com/796nsz)
 
-[Download MP4](./cosmo-roast-demo%20video.mp4)
+📥 [Download MP4](./cosmo-roast-demo%20video.mp4)
 
 ---
 
