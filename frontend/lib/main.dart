@@ -173,6 +173,11 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
       _showError('Something went wrong. Please try again.');
       return;
     }
+    // Clear text fields
+    dayController.clear();
+    monthController.clear();
+    yearController.clear();
+    
     if (mounted) {
       Navigator.push(
         context,
