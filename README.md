@@ -6,11 +6,11 @@ Ever wondered what the stars *really* think about you? Enter your birthdate and 
 
 **Live Demo:** https://cosmo-roast.netlify.app
 
-**Demo Video:**
+**Demo:**
 
-[![Watch Demo](https://img.shields.io/badge/▶️_Watch_Demo-Streamable-blue?style=for-the-badge)](https://streamable.com/796nsz)
+![Cosmic Roast Demo](./demo.gif)
 
-📥 [Download MP4](./cosmo-roast-demo%20video.mp4)
+� [Watch full video on Streamable](https://streamable.com/796nsz) | 📥 [Download MP4](./cosmo-roast-demo%20video.mp4)
 
 ---
 
