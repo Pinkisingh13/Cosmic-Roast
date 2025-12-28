@@ -62,7 +62,7 @@ app.post("/roast-me", async (req, res) => {
             4. Be brutally honest. Make them feel exposed.
             
             Format:
-            - Max 2-3 short, punchy sentences.
+            - Max 2-3 punchy sentences.
             - Do not start with "Oh look...". Just attack directly.
           `
         },
@@ -72,7 +72,7 @@ app.post("/roast-me", async (req, res) => {
         }
       ],
       model: "llama-3.1-8b-instant", 
-      temperature: 0.7, // Lowered slightly to keep it more focused
+      temperature: 0.7, 
     });
 
     res.json({ 

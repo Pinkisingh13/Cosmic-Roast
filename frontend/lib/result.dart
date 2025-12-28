@@ -17,77 +17,89 @@ class ResultScreen extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: Stack(
-        children: [
-          // Background Image
-          Positioned.fill(
-            child: Image.asset('assets/vertical_bg.png', fit: BoxFit.cover),
-          ),
-          
-          // Blur Overlay
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(color: Colors.black.withOpacity(0.6)),
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: Image.asset('assets/vertical_bg.png', fit: BoxFit.cover),
             ),
-          ),
 
-          // Content
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+            // Blur Overlay
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(color: Colors.black.withOpacity(0.6)),
+              ),
+            ),
+
+            // Content with SafeArea
+            SafeArea(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // App Branding
-                  const Text(
-                    'COSMIC ROAST',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purpleAccent,
-                      letterSpacing: 4,
+                  // Scrollable Content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 32,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // App Branding
+                          const Text(
+                            'COSMIC ROAST',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purpleAccent,
+                              letterSpacing: 4,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Mulank Badge
+                          _buildMulankBadge(),
+                          const SizedBox(height: 16),
+
+                          // Tagline
+                          const Text(
+                            "THE STARS HAVE SPOKEN",
+                            style: TextStyle(
+                              color: Colors.purpleAccent,
+                              letterSpacing: 3,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Roast Text Card
+                          _buildRoastCard(),
+                          const SizedBox(height: 24),
+
+                          // Year Badge
+                          Text(
+                            '✨ 2026 Predictions ✨',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.5),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
 
-                  // Mulank Badge
-                  _buildMulankBadge(),
-                  const SizedBox(height: 16),
-
-                  // Tagline
-                  const Text(
-                    "THE STARS HAVE SPOKEN",
-                    style: TextStyle(
-                      color: Colors.purpleAccent,
-                      letterSpacing: 3,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  // Fixed Button at Bottom
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: _buildTryAgainButton(context),
                   ),
-                  const SizedBox(height: 32),
-
-                  // Roast Text Card
-                  _buildRoastCard(),
-                  const SizedBox(height: 24),
-
-                  // Year Badge
-                  Text(
-                    '✨ 2026 Predictions ✨',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Try Again Button
-                  _buildTryAgainButton(context),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -135,7 +147,7 @@ class ResultScreen extends StatelessWidget {
         roast,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 20,
+          fontSize: 18,
           color: Colors.white,
           height: 1.6,
         ),
@@ -145,19 +157,22 @@ class ResultScreen extends StatelessWidget {
 
   /// Builds the try again button
   Widget _buildTryAgainButton(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: () => Navigator.pop(context),
-      icon: const Icon(Icons.refresh, size: 20),
-      label: const Text("TRY ANOTHER DATE"),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 32,
-          vertical: 16,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.refresh, size: 20),
+        label: const Text("TRY ANOTHER DATE"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 32,
+            vertical: 16,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );
