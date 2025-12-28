@@ -1,9 +1,8 @@
-import 'dart:convert';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+
+import 'api_service.dart';
+import 'result.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,6 +49,8 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
   String? yearError;
 
   bool _isLoading = false;
+
+  // Validation Methods
 
   void _validateDay(String value) {
     setState(() {
@@ -127,6 +128,7 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
         yearError = null;
       }
 
+      // Check days in month
       if (isValid && day != null && month != null && year != null) {
         final daysInMonth = DateTime(year, month + 1, 0).day;
         if (day > daysInMonth) {
@@ -139,6 +141,7 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
     return isValid;
   }
 
+  // Submit Handler
   Future<void> _onSubmit() async {
     FocusScope.of(context).unfocus();
 
@@ -147,85 +150,51 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
     final year = yearController.text;
 
     if (day.isEmpty || month.isEmpty || year.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please enter your complete birthdate',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+      _showError('Please enter your complete birthdate');
       _validateAll();
       return;
     }
 
     if (!_validateAll()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please enter a valid birthdate',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      _showError('Please enter a valid birthdate');
+      return;
+    }
+    setState(() => _isLoading = true);
+
+    final response = await ApiService.getRoast(
+      day: day,
+      month: month,
+      year: year,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (response == null) {
+      _showError('Something went wrong. Please try again.');
+      return;
+    }
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultScreen(
+            roast: response['roast'],
+            mulank: response['mulank'],
           ),
         ),
       );
-      return;
     }
+  }
 
-    setState(() => _isLoading = true);
-
-    try {
-      // REPLACE WITH YOUR RENDER URL
-      final url = Uri.parse('https://YOUR-APP.onrender.com/roast-me');
-
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'date': dayController.text,
-          'month': monthController.text,
-          'year': yearController.text,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final roast = data['roast'];
-        final mulank = data['mulank'];
-
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  ResultScreen(roast: roast, mulank: mulank.toString()),
-            ),
-          );
-        }
-      } else {
-        throw Exception('Server Error');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
@@ -273,7 +242,7 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo/Icon
+                      // Logo
                       Container(
                         width: 100,
                         height: 100,
@@ -299,27 +268,20 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
                           color: Colors.white,
                         ),
                       ),
-
                       const SizedBox(height: 32),
-
+                      
                       // Title
-                      ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          colors: [Colors.white, Colors.purple.shade200],
-                        ).createShader(bounds),
-                        child: const Text(
-                          'COSMIC ROAST',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 4,
-                          ),
+                      const Text(
+                        'COSMIC ROAST',
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 4,
                         ),
                       ),
-
                       const SizedBox(height: 8),
-
+                      
                       // Subtitle
                       Text(
                         '✨ Savage Predictions 2026 ✨',
@@ -329,158 +291,10 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
                           letterSpacing: 2,
                         ),
                       ),
-
                       const SizedBox(height: 48),
-
-                      // Glass Card
-                      Container(
-                        constraints: const BoxConstraints(maxWidth: 400),
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          color: Colors.white.withOpacity(0.1),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Enter Your Birthdate',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            Text(
-                              'The stars have something to say...',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                            ),
-
-                            const SizedBox(height: 32),
-
-                            // Date Input Fields
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: _buildDateField(
-                                    controller: dayController,
-                                    focusNode: dayFocus,
-                                    label: 'DD',
-                                    maxLength: 2,
-                                    errorText: dayError,
-                                    onChanged: (value) {
-                                      _validateDay(value);
-                                      if (value.length == 2 &&
-                                          dayError == null) {
-                                        monthFocus.requestFocus();
-                                      }
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: _buildDateField(
-                                    controller: monthController,
-                                    focusNode: monthFocus,
-                                    label: 'MM',
-                                    maxLength: 2,
-                                    errorText: monthError,
-                                    onChanged: (value) {
-                                      _validateMonth(value);
-                                      if (value.length == 2 &&
-                                          monthError == null) {
-                                        yearFocus.requestFocus();
-                                      }
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  flex: 2,
-                                  child: _buildDateField(
-                                    controller: yearController,
-                                    focusNode: yearFocus,
-                                    label: 'YYYY',
-                                    maxLength: 4,
-                                    errorText: yearError,
-                                    onChanged: (value) {
-                                      _validateYear(value);
-                                      if (value.length == 4 &&
-                                          yearError == null) {
-                                        FocusScope.of(context).unfocus();
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 32),
-
-                            // Submit Button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 56,
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _onSubmit,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.deepPurple,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 8,
-                                  shadowColor:
-                                      Colors.deepPurple.withOpacity(0.5),
-                                ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.rocket_launch, size: 20),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            'REVEAL MY FATE',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 2,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
+                      
+                      // Input Card
+                      _buildInputCard(),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -490,6 +304,105 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInputCard() {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withOpacity(0.1),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Enter Your Birthdate',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'The stars have something to say...',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 32),
+          _buildDateInputRow(),
+          const SizedBox(height: 32),
+          _buildSubmitButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateInputRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _buildDateField(
+            controller: dayController,
+            focusNode: dayFocus,
+            label: 'DD',
+            maxLength: 2,
+            errorText: dayError,
+            onChanged: (value) {
+              _validateDay(value);
+              if (value.length == 2 && dayError == null) {
+                monthFocus.requestFocus();
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildDateField(
+            controller: monthController,
+            focusNode: monthFocus,
+            label: 'MM',
+            maxLength: 2,
+            errorText: monthError,
+            onChanged: (value) {
+              _validateMonth(value);
+              if (value.length == 2 && monthError == null) {
+                yearFocus.requestFocus();
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          flex: 2,
+          child: _buildDateField(
+            controller: yearController,
+            focusNode: yearFocus,
+            label: 'YYYY',
+            maxLength: 4,
+            errorText: yearError,
+            onChanged: (value) {
+              _validateYear(value);
+              if (value.length == 4 && yearError == null) {
+                FocusScope.of(context).unfocus();
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -531,152 +444,39 @@ class _CosmicRoastHomeState extends State<CosmicRoastHome> {
       ),
     );
   }
-}
 
-// Simple Result Screen - No download/share functionality
-class ResultScreen extends StatelessWidget {
-  final String roast;
-  final String mulank;
-
-  const ResultScreen({super.key, required this.roast, required this.mulank});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _onSubmit,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 8,
+          shadowColor: Colors.deepPurple.withOpacity(0.5),
         ),
-      ),
-      body: Stack(
-        children: [
-          // Background
-          Positioned.fill(
-            child: Image.asset('assets/vertical_bg.png', fit: BoxFit.cover),
-          ),
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(color: Colors.black.withOpacity(0.6)),
-            ),
-          ),
-
-          // Content
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // App branding
-                  const Text(
-                    'COSMIC ROAST',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purpleAccent,
-                      letterSpacing: 4,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Mulank Badge
-                  Container(
-                    width: 100,
-                    height: 100,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.purpleAccent, width: 3),
-                      color: Colors.black.withOpacity(0.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.purple.withOpacity(0.3),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      mulank,
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  const Text(
-                    "THE STARS HAVE SPOKEN",
-                    style: TextStyle(
-                      color: Colors.purpleAccent,
-                      letterSpacing: 3,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // The Roast Text
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 500),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Text(
-                      roast,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        height: 1.6,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  
-                  Text(
-                    '✨ 2026 Predictions ✨',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // Try Again Button
-                  ElevatedButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.refresh, size: 20),
-                    label: const Text("TRY ANOTHER DATE"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
+        child: _isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text(
+                'REVEAL MY FATE',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-          ),
-        ],
       ),
     );
   }
