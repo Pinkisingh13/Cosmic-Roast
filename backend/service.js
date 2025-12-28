@@ -9,6 +9,11 @@ app.use(cors());
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
 const MULANK_TRAITS = {
   1: { planet: "Sun (Surya)", traits: "Egoistic, dominating, thinks they are the King, attention seeker, stuborn father-figure energy." },
   2: { planet: "Moon (Chandra)", traits: "Emotional crybaby, moody, over-sensitive, mommy issues, can't make decisions." },
@@ -68,7 +73,7 @@ app.post("/roast-me", async (req, res) => {
         },
         {
           role: "user",
-          content: `Roast me. I was born on ${date}-${month}-${year}.`
+          content: `Roast me. I was born on ${date} ${MONTH_NAMES[parseInt(month) - 1]} ${year}.`
         }
       ],
       model: "llama-3.1-8b-instant", 
